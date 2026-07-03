@@ -25,7 +25,7 @@ import json
 import sys
 from pathlib import Path
 
-from exif_reader import read_exif, resolve_field
+from exif_reader import haversine_km, read_exif, resolve_field
 from exif_query import And, QueryError, field_names, parse_condition, parse_query
 
 JPEG_SUFFIXES = {".jpg", ".jpeg"}
@@ -154,6 +154,28 @@ def cmd_show_field(
     return 0
 
 
+def _parse_near(spec: str) -> tuple:
+    """Rozłóż argument ``--near`` postaci 'LAT,LON,PROMIEŃ' na trzy liczby.
+
+    Zwraca krotkę (lat, lon, radius_km). Rzuca :class:`QueryError` przy błędzie.
+    """
+    parts = [p.strip() for p in spec.split(",")]
+    if len(parts) != 3:
+        raise QueryError(
+            f"Niepoprawny argument --near: '{spec}'. "
+            f"Oczekiwano 'LAT,LON,PROMIEŃ_KM', np. '52.23,21.01,5'."
+        )
+    try:
+        lat, lon, radius = (float(p) for p in parts)
+    except ValueError:
+        raise QueryError(
+            f"Wartości w --near muszą być liczbami: '{spec}'."
+        )
+    if radius < 0:
+        raise QueryError("Promień w --near nie może być ujemny.")
+    return lat, lon, radius
+
+
 def _sort_key(value):
     """Klucz sortowania: (brak?, liczba-lub-tekst). Braki lądują na końcu.
 
@@ -176,24 +198,38 @@ def cmd_search(
     descending: bool = False,
     fmt: str = "text",
     base: Path | None = None,
+    near: str | None = None,
 ) -> int:
     """Wypisz pliki spełniające zapytanie.
 
     Warunki z ``--where`` (łączone przez AND) i wyrażenie ``--query`` (z AND/OR
-    i nawiasami) składane są w jedno drzewo predykatów. Obok nazwy pliku
+    i nawiasami) składane są w jedno drzewo predykatów. ``--near`` dodaje filtr
+    odległości od punktu GPS (pole syntetyczne ``DistanceKm``). Obok nazwy pliku
     pokazujemy wartości użytych pól. Wyniki można posortować po dowolnym polu.
     """
     try:
         parts = [parse_condition(e, resolve_field) for e in (expressions or [])]
         if query:
             parts.append(parse_query(query, resolve_field))
+        center = _parse_near(near) if near else None
+        if center is not None:
+            # Filtr odległości = warunek na syntetycznym polu DistanceKm.
+            parts.append(parse_condition(f"DistanceKm<={center[2]}", resolve_field))
     except QueryError as err:
         print(f"Błąd zapytania: {err}", file=sys.stderr)
+        return 2
+
+    if not parts:
+        print("Podaj co najmniej jeden warunek (--where / --query / --near).",
+              file=sys.stderr)
         return 2
 
     predicate = parts[0] if len(parts) == 1 else And(tuple(parts))
 
     shown_fields = field_names(predicate)  # unikalne, w kolejności
+    # Domyślnie sortuj wg odległości, gdy użyto --near bez własnego --sort.
+    if center is not None and not sort_field:
+        sort_field = "DistanceKm"
     sort_field = resolve_field(sort_field) if sort_field else None
     if sort_field and sort_field not in shown_fields:
         shown_fields.append(sort_field)  # pokaż też pole, po którym sortujemy
@@ -202,6 +238,12 @@ def cmd_search(
     matches: list[tuple[Path, dict]] = []
     for path in images:
         fields = read_exif(path)
+        if center is not None:
+            lat, lon = fields.get("Latitude"), fields.get("Longitude")
+            if lat is not None and lon is not None:
+                fields["DistanceKm"] = round(
+                    haversine_km(center[0], center[1], lat, lon), 3
+                )
         if predicate.matches(fields):
             matches.append((path, fields))
 
@@ -282,6 +324,13 @@ def main(argv: list[str] | None = None) -> int:
              "'(ISO>=800 OR FNumber<3.5) AND DateTime>=2025:01:01'.",
     )
     parser.add_argument(
+        "--near",
+        metavar="LAT,LON,KM",
+        help="Filtruj zdjęcia w promieniu KM kilometrów od punktu (LAT, LON), "
+             "np. '52.23,21.01,5'. Dodaje pole DistanceKm i domyślnie sortuje "
+             "po odległości.",
+    )
+    parser.add_argument(
         "--sort",
         metavar="POLE",
         help="Posortuj wyniki wyszukiwania po podanym polu.",
@@ -324,10 +373,10 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.list_fields:
         return cmd_list_fields(images, fmt)
-    if args.where or args.query:
+    if args.where or args.query or args.near:
         return cmd_search(
             images, args.where, args.query, args.sort, args.desc, fmt,
-            base=directory,
+            base=directory, near=args.near,
         )
     return cmd_show_field(images, resolve_field(args.field), directory, fmt)
 

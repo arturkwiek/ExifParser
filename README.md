@@ -155,6 +155,7 @@ Zamiast długich nazw tagów EXIF można używać skrótów (w `--field`, `--whe
 | `width`, `height` | `ExifImageWidth`, `ExifImageHeight` |
 | `lat`, `lon`/`lng` | `Latitude`, `Longitude` |
 | `direction` | `GPSImgDirection` |
+| `distance`, `dist` | `DistanceKm` (dostępne przy `--near`) |
 
 Nieznana nazwa jest używana dosłownie, więc dowolny surowy tag EXIF (patrz
 `--list-fields`) też zadziała.
@@ -173,6 +174,24 @@ python3 exif_cli.py -q "Latitude>=52 AND Latitude<=53 AND Longitude>=21 AND Long
 > Wiele zdjęć nie ma faktycznego fixa GPS (`GPSStatus='V'`) — wtedy pól
 > `Latitude`/`Longitude` brak. Do testów służy syntetyczny plik
 > `fixtures/gps_sample.jpg` (patrz niżej).
+
+### Odległość od punktu (`--near`)
+
+Filtr `--near "LAT,LON,PROMIEŃ_KM"` zostawia zdjęcia w zadanym promieniu
+(km) od punktu, licząc odległość po powierzchni Ziemi (wzór haversine).
+Dodaje syntetyczne pole `DistanceKm` i domyślnie **sortuje wyniki rosnąco
+wg odległości** (można nadpisać przez `--sort`).
+
+```bash
+# Zdjęcia w promieniu 5 km od centrum Warszawy
+python3 exif_cli.py --near "52.23,21.01,5"
+
+# Łączenie z innymi warunkami (AND) i eksport
+python3 exif_cli.py --near "52.23,21.01,10" --where "ISO>=400" --csv
+```
+
+Alias `distance`/`dist` odnosi się do pola `DistanceKm` (np. `--sort dist --desc`).
+Zdjęcia bez współrzędnych są pomijane.
 
 ## Struktura projektu
 
@@ -210,8 +229,8 @@ python3 make_fixtures.py
 
 ```
 usage: exif_cli.py [-h] [--field FIELD] [--list-fields] [--where WARUNEK]
-                   [-q WYRAŻENIE] [--sort POLE] [--desc] [--json | --csv]
-                   [-r] [directory]
+                   [-q WYRAŻENIE] [--near LAT,LON,KM] [--sort POLE] [--desc]
+                   [--json | --csv] [-r] [directory]
 ```
 
 | Opcja | Opis |
@@ -221,6 +240,7 @@ usage: exif_cli.py [-h] [--field FIELD] [--list-fields] [--where WARUNEK]
 | `--list-fields` | Wypisz wszystkie dostępne pola EXIF i zakończ. |
 | `--where WARUNEK` | Filtr `POLE OP WARTOŚĆ`; wielokrotnie = AND. |
 | `-q, --query WYRAŻENIE` | Wyrażenie logiczne z AND/OR i nawiasami. |
+| `--near LAT,LON,KM` | Filtr odległości od punktu GPS (dodaje `DistanceKm`). |
 | `--sort POLE` | Sortuj wyniki po podanym polu. |
 | `--desc` | Sortuj malejąco (z `--sort`). |
 | `--json` | Wypisz wynik w formacie JSON. |
