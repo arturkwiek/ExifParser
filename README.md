@@ -249,6 +249,7 @@ usage: exif_cli.py [-h] [--field FIELD] [--list-fields] [--where WARUNEK]
 | `--json` | Wypisz wynik w formacie JSON. |
 | `--csv` | Wypisz wynik w formacie CSV (wyklucza się z `--json`). |
 | `-r, --recursive` | Przeszukuj również podkatalogi. |
+| `--version` | Wyświetl wersję programu i zakończ. |
 
 ## Licencja
 

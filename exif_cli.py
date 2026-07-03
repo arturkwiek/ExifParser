@@ -28,6 +28,8 @@ from pathlib import Path
 from exif_reader import haversine_km, read_exif, resolve_field
 from exif_query import And, QueryError, field_names, parse_condition, parse_query
 
+__version__ = "1.0.0"
+
 JPEG_SUFFIXES = {".jpg", ".jpeg"}
 
 
@@ -293,6 +295,11 @@ def cmd_search(
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Odczyt danych EXIF z plików JPEG.",
+    )
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"%(prog)s {__version__}",
     )
     parser.add_argument(
         "directory",
