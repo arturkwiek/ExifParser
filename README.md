@@ -1,6 +1,7 @@
 # ExifParser
 
 [![tests](https://github.com/arturkwiek/ExifParser/actions/workflows/tests.yml/badge.svg)](https://github.com/arturkwiek/ExifParser/actions/workflows/tests.yml)
+[![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 Narzędzie wiersza poleceń do odczytu danych **EXIF** ze zdjęć JPEG oraz
 przeszukiwania kolekcji zdjęć po wartościach i **zakresach** pól — z obsługą
@@ -248,3 +249,7 @@ usage: exif_cli.py [-h] [--field FIELD] [--list-fields] [--where WARUNEK]
 | `--json` | Wypisz wynik w formacie JSON. |
 | `--csv` | Wypisz wynik w formacie CSV (wyklucza się z `--json`). |
 | `-r, --recursive` | Przeszukuj również podkatalogi. |
+
+## Licencja
+
+Projekt udostępniony na licencji [MIT](LICENSE).
