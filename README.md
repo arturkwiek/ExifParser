@@ -1,5 +1,7 @@
 # ExifParser
 
+![tests](https://img.shields.io/badge/tests-39%20passing-brightgreen)
+
 Narzędzie wiersza poleceń do odczytu danych **EXIF** ze zdjęć JPEG oraz
 przeszukiwania kolekcji zdjęć po wartościach i **zakresach** pól — z obsługą
 wyrażeń logicznych (AND/OR + nawiasy), sortowania, aliasów pól, współrzędnych
