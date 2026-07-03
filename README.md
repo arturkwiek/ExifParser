@@ -1,6 +1,6 @@
 # ExifParser
 
-![tests](https://img.shields.io/badge/tests-39%20passing-brightgreen)
+[![tests](https://github.com/arturkwiek/ExifParser/actions/workflows/tests.yml/badge.svg)](https://github.com/arturkwiek/ExifParser/actions/workflows/tests.yml)
 
 Narzędzie wiersza poleceń do odczytu danych **EXIF** ze zdjęć JPEG oraz
 przeszukiwania kolekcji zdjęć po wartościach i **zakresach** pól — z obsługą
