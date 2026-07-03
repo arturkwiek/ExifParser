@@ -1,0 +1,21 @@
+# Środowisko wirtualne
+.venv/
+venv/
+
+# Cache i artefakty Pythona
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Zdjęcia źródłowe (dane wejściowe, nie część aplikacji)
+# Fixture testowy fixtures/gps_sample.jpg jest wersjonowany (patrz wyjątek).
+DSC*.JPG
+DSC*.jpg
+
+# Lokalne ustawienia narzędzi
+.claude/settings.local.json
+
+# Systemowe
+.DS_Store
+Thumbs.db
