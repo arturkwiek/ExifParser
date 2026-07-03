@@ -5,8 +5,9 @@
 
 Narzędzie wiersza poleceń do odczytu danych **EXIF** ze zdjęć JPEG oraz
 przeszukiwania kolekcji zdjęć po wartościach i **zakresach** pól — z obsługą
-wyrażeń logicznych (AND/OR + nawiasy), sortowania, aliasów pól, współrzędnych
-GPS i eksportu do JSON.
+wyrażeń logicznych (AND/OR + nawiasy), filtrowania po odległości od punktu
+**GPS**, sortowania, aliasów pól, przeszukiwania podkatalogów oraz eksportu do
+**JSON i CSV**.
 
 ## Wymagania
 
@@ -201,13 +202,15 @@ Zdjęcia bez współrzędnych są pomijane.
 ```
 exif_reader.py        # warstwa danych: read_exif() + aliasy + gps_to_decimal()
 exif_query.py         # logika zapytań: warunki, And/Or/nawiasy, parse_query()
-exif_cli.py           # interfejs CLI
+exif_cli.py           # interfejs CLI (__version__ tutaj)
 make_fixtures.py      # generator syntetycznych plików testowych z GPS
 fixtures/             # pliki testowe (gps_sample.jpg)
 test_exif_query.py    # testy jednostkowe zapytań i aliasów
 test_gps_fixture.py   # testy integracyjne ścieżki GPS
-test_cli.py           # testy CLI (wyszukiwanie plików, rekursja)
+test_cli.py           # testy CLI (wyszukiwanie plików, rekursja, --near, CSV)
 requirements.txt
+.github/workflows/    # CI (tests.yml) i wydania (release.yml)
+LICENSE               # MIT
 ```
 
 `exif_reader.read_exif(path)` zwraca spłaszczony, znormalizowany słownik pól
@@ -231,9 +234,10 @@ python3 make_fixtures.py
 ## Pełna lista opcji CLI
 
 ```
-usage: exif_cli.py [-h] [--field FIELD] [--list-fields] [--where WARUNEK]
-                   [-q WYRAŻENIE] [--near LAT,LON,KM] [--sort POLE] [--desc]
-                   [--json | --csv] [-r] [directory]
+usage: exif_cli.py [-h] [--version] [--field FIELD] [--list-fields]
+                   [--where WARUNEK] [-q WYRAŻENIE] [--near LAT,LON,KM]
+                   [--sort POLE] [--desc] [--json | --csv] [-r]
+                   [directory]
 ```
 
 | Opcja | Opis |
@@ -250,6 +254,22 @@ usage: exif_cli.py [-h] [--field FIELD] [--list-fields] [--where WARUNEK]
 | `--csv` | Wypisz wynik w formacie CSV (wyklucza się z `--json`). |
 | `-r, --recursive` | Przeszukuj również podkatalogi. |
 | `--version` | Wyświetl wersję programu i zakończ. |
+
+## Wydania
+
+Wersja żyje w `exif_cli.__version__` (obecnie `1.0.0`; sprawdzisz też przez
+`python3 exif_cli.py --version`). Wydanie tworzy się przez otagowanie commitu
+zgodnie z [semantycznym wersjonowaniem](https://semver.org/lang/pl/):
+
+```bash
+git tag -a v1.0.0 -m "ExifParser 1.0.0"
+git push origin v1.0.0
+```
+
+Push tagu `v*` uruchamia workflow `release.yml`, który przechodzi testy,
+sprawdza zgodność tagu z `__version__` i publikuje **GitHub Release** z
+automatycznie wygenerowanymi notatkami. Kolejne wydanie: podbij `__version__`,
+zacommituj, otaguj `vX.Y.Z`.
 
 ## Licencja
 

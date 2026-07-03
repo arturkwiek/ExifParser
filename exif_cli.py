@@ -1,19 +1,18 @@
-"""Prosty interfejs wiersza poleceń do przeglądania danych EXIF.
+"""Interfejs wiersza poleceń do przeglądania i przeszukiwania danych EXIF.
 
-Pierwszy krok docelowej aplikacji: dla każdego zdjęcia w katalogu wyświetla
-wartość wybranego pola EXIF (domyślnie aparat). W kolejnych krokach dołożymy
-przeszukiwanie po wartościach i zakresach.
+Dla każdego zdjęcia w katalogu może wyświetlić wartość wybranego pola,
+przeszukać kolekcję po wartościach i zakresach (również z wyrażeniami AND/OR
+i nawiasami), filtrować po odległości od punktu GPS, sortować oraz eksportować
+wyniki do JSON lub CSV. Pełny opis: README.md.
 
 Przykłady:
-    python3 exif_cli.py                     # aparat dla każdego pliku (.)
-    python3 exif_cli.py --field ISOSpeedRatings
-    python3 exif_cli.py --field DateTime /sciezka/do/zdjec
-    python3 exif_cli.py --list-fields       # jakie pola są dostępne
-
-Wyszukiwanie (koniunkcja warunków, można podać --where wielokrotnie):
-    python3 exif_cli.py --where "ISOSpeedRatings>=400"
-    python3 exif_cli.py --where "FNumber<=3.5" --where "DateTime>=2025:01:01"
-    python3 exif_cli.py --where "Camera=SONY DSC-HX9V"
+    python3 exif_cli.py                          # aparat dla każdego pliku (.)
+    python3 exif_cli.py --field ISO
+    python3 exif_cli.py --list-fields
+    python3 exif_cli.py --where "ISO>=400" --where "FNumber<=3.5"
+    python3 exif_cli.py -q "(ISO>=800 OR FNumber<3.5) AND Date>=2025:01:01"
+    python3 exif_cli.py --near "52.23,21.01,5" --csv
+    python3 exif_cli.py -r --where "Camera=SONY DSC-HX9V" --json
 """
 
 from __future__ import annotations
